@@ -33,13 +33,9 @@
     /* ── Top bar ── */
     .toolbar {
       position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
+      top: 0; left: 0; right: 0;
       z-index: 100;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      display: flex; align-items: center; justify-content: space-between;
       padding: 0.75rem 1.5rem;
       background-color: var(--cream);
       border-bottom: 1px solid var(--warm-beige);
@@ -47,166 +43,82 @@
     }
 
     .toolbar__left, .toolbar__right {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      min-width: 0;
+      display: flex; align-items: center; gap: 1rem; min-width: 0;
     }
 
-    .toolbar__back {
-      font-size: 0.8rem;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      text-decoration: none;
-      color: var(--burgundy);
-      opacity: 0.7;
-      transition: opacity 0.2s;
-      white-space: nowrap;
+    .toolbar__back, .toolbar__download {
+      font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase;
+      text-decoration: none; color: var(--burgundy); opacity: 0.7;
+      transition: opacity 0.2s; white-space: nowrap;
     }
-    .toolbar__back:hover { opacity: 1; }
+    .toolbar__back:hover, .toolbar__download:hover { opacity: 1; }
 
     .toolbar__title {
-      font-family: 'EB Garamond', Georgia, serif;
-      font-size: 1.1rem;
-      color: var(--burgundy);
-      position: absolute;
-      left: 50%;
-      transform: translateX(-50%);
-      white-space: nowrap;
+      font-family: 'EB Garamond', Georgia, serif; font-size: 1.1rem;
+      color: var(--burgundy); position: absolute; left: 50%;
+      transform: translateX(-50%); white-space: nowrap;
     }
-
-    .toolbar__download {
-      font-size: 0.8rem;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      text-decoration: none;
-      color: var(--burgundy);
-      opacity: 0.7;
-      transition: opacity 0.2s;
-      white-space: nowrap;
-    }
-    .toolbar__download:hover { opacity: 1; }
 
     /* ── Zoom controls ── */
-    .zoom-controls {
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-    }
+    .zoom-controls { display: flex; align-items: center; gap: 0.4rem; }
 
     .zoom-btn {
-      width: 30px;
-      height: 30px;
-      border: 1px solid var(--warm-beige);
-      border-radius: 4px;
-      background: var(--white);
-      color: var(--burgundy);
-      font-size: 1.1rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: border-color 0.2s, background-color 0.2s;
+      width: 30px; height: 30px; border: 1px solid var(--warm-beige);
+      border-radius: 4px; background: var(--white); color: var(--burgundy);
+      font-size: 1.1rem; cursor: pointer; display: flex; align-items: center;
+      justify-content: center; transition: border-color 0.2s, background-color 0.2s;
       line-height: 1;
     }
-    .zoom-btn:hover {
-      border-color: var(--burgundy);
-      background-color: #FDF8F4;
-    }
+    .zoom-btn:hover:not(:disabled) { border-color: var(--burgundy); background-color: #FDF8F4; }
+    .zoom-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
     .zoom-level {
-      font-size: 0.7rem;
-      color: var(--text-dark);
-      opacity: 0.6;
-      min-width: 3em;
-      text-align: center;
-      letter-spacing: 0.03em;
-      border: none;
-      background: none;
-      padding: 0;
-      font-family: inherit;
-      cursor: pointer;
-      transition: opacity 0.2s;
+      font-size: 0.7rem; color: var(--text-dark); opacity: 0.6; min-width: 3em;
+      text-align: center; letter-spacing: 0.03em; border: none; background: none;
+      padding: 0; font-family: inherit; cursor: pointer; transition: opacity 0.2s;
     }
     .zoom-level:hover { opacity: 1; text-decoration: underline; }
 
     /* ── Pages container ── */
     .pages {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 5rem 1rem 3rem;
-      gap: 1rem;
-      min-width: min-content;
+      display: flex; flex-direction: column; align-items: center;
+      padding: 5rem 1rem 3rem; gap: 1rem; min-width: min-content;
     }
 
     .page-wrapper {
-      background: var(--white);
-      box-shadow: 0 2px 16px rgba(44, 26, 14, 0.08);
-      line-height: 0;
-      position: relative;
-      overflow: hidden;
+      background: var(--white); box-shadow: 0 2px 16px rgba(44, 26, 14, 0.08);
+      line-height: 0; position: relative; overflow: hidden;
     }
 
     .page-wrapper canvas {
-      display: block;
-      width: 100%;
-      height: auto;
-      filter: contrast(1.08);
+      display: block; width: 100%; height: auto; filter: contrast(1.08);
     }
 
-    /* placeholder while page hasn't rendered */
-    .page-wrapper--loading {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
+    .page-wrapper--loading { display: flex; align-items: center; justify-content: center; }
     .page-wrapper--loading::after {
-      content: '';
-      width: 28px;
-      height: 28px;
-      border: 2px solid var(--warm-beige);
-      border-top-color: var(--burgundy);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      position: absolute;
+      content: ''; width: 28px; height: 28px; border: 2px solid var(--warm-beige);
+      border-top-color: var(--burgundy); border-radius: 50%;
+      animation: spin 0.8s linear infinite; position: absolute;
     }
 
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
     /* ── Loading overlay ── */
     .loading-overlay {
-      position: fixed;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      background: var(--cream);
-      z-index: 200;
-      transition: opacity 0.3s;
+      position: fixed; inset: 0; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; background: var(--cream);
+      z-index: 200; transition: opacity 0.3s;
     }
-    .loading-overlay.hidden {
-      opacity: 0;
-      pointer-events: none;
-    }
+    .loading-overlay.hidden { opacity: 0; pointer-events: none; }
+    
     .loading-overlay__spinner {
-      width: 36px;
-      height: 36px;
-      border: 2px solid var(--warm-beige);
-      border-top-color: var(--burgundy);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin-bottom: 1.2rem;
+      width: 36px; height: 36px; border: 2px solid var(--warm-beige);
+      border-top-color: var(--burgundy); border-radius: 50%;
+      animation: spin 0.8s linear infinite; margin-bottom: 1.2rem;
     }
     .loading-overlay__text {
-      font-size: 0.8rem;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: var(--burgundy);
-      opacity: 0.6;
+      font-size: 0.8rem; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--burgundy); opacity: 0.6; text-align: center;
     }
 
     /* ── Responsive ── */
@@ -221,14 +133,14 @@
 
   <div class="loading-overlay" id="loadingOverlay">
     <div class="loading-overlay__spinner"></div>
-    <span class="loading-overlay__text">Laden...</span>
+    <span class="loading-overlay__text" id="loadingText">Laden...</span>
   </div>
 
   <nav class="toolbar">
     <div class="toolbar__left">
       <a href="index.html" class="toolbar__back">&larr; Terug</a>
     </div>
-    <span class="toolbar__title" id="docTitle"></span>
+    <span class="toolbar__title" id="docTitle">Viewer</span>
     <div class="toolbar__right">
       <div class="zoom-controls">
         <button class="zoom-btn" id="zoomOut" title="Zoom uit">&minus;</button>
@@ -249,7 +161,7 @@
       window.location.href = 'index.html';
     }
 
-    // Titles for the toolbar
+    // Set UI Details
     const titles = {
       'MilenaMarcowka_Portfolio.pdf': 'Portfolio',
       'MilenaMarcowka_CV.pdf': 'Curriculum Vitae',
@@ -258,31 +170,20 @@
     const filename = file.split('/').pop();
     document.getElementById('docTitle').textContent = titles[filename] || filename;
     document.title = `Milena Marcowka \u2014 ${titles[filename] || 'Viewer'}`;
-
-    // Download link
     document.getElementById('downloadBtn').href = file;
-
-    // Load pdf.js
-    const pdfjsLib = await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.9.155/pdf.min.mjs');
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.9.155/pdf.worker.min.mjs';
 
     const pagesContainer = document.getElementById('pages');
     const overlay = document.getElementById('loadingOverlay');
+    const loadingText = document.getElementById('loadingText');
     const PIXEL_RATIO = window.devicePixelRatio || 1;
 
-    const pdf = await pdfjsLib.getDocument({ url: file, disableAutoFetch: true, disableStream: true }).promise;
-    const totalPages = pdf.numPages;
-
-    // Fetch only page 1 dimensions upfront; use as default for all pages.
-    // This avoids triggering a full PDF download at startup.
-    const page1 = await pdf.getPage(1);
-    const vp1 = page1.getViewport({ scale: 1 });
-    page1.cleanup();
-    const defaultDims = { width: vp1.width, height: vp1.height };
-    const pageData = Array.from({ length: totalPages }, () => ({ ...defaultDims }));
+    let pdf = null;
+    let totalPages = 0;
+    let pageData = [];
+    const pageStates =[];
 
     // ── Zoom state ──
-    const ZOOM_STEPS = [0.5, 0.75, 1, 1.25, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5];
+    const ZOOM_STEPS =[0.5, 0.75, 1, 1.25, 1.5, 2, 2.5, 3, 4, 5];
     let zoomIndex = 2; // start at 100%
     let currentZoom = 1;
 
@@ -290,26 +191,59 @@
     const zoomInBtn = document.getElementById('zoomIn');
     const zoomOutBtn = document.getElementById('zoomOut');
 
+    // FIX: Cap max width to 1100px so 100% zoom doesn't break on 4K monitors
     function getBaseWidth() {
-      return window.innerWidth - 32;
+      return Math.min(window.innerWidth - 32, 1100); 
     }
 
-    // ── Create page wrappers ──
-    const pageStates = [];
+    // ── Safe Initialization ──
+    async function initViewer() {
+      try {
+        const pdfjsLib = await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.9.155/pdf.min.mjs');
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.9.155/pdf.worker.min.mjs';
 
-    for (let i = 0; i < totalPages; i++) {
-      const wrapper = document.createElement('div');
-      wrapper.className = 'page-wrapper page-wrapper--loading';
-      wrapper.dataset.pageNum = i + 1;
-      pagesContainer.appendChild(wrapper);
+        // FIX: Removed disableStream/disableAutoFetch. Let PDF.js handle range-requests natively!
+        const loadingTask = pdfjsLib.getDocument({ url: file });
+        
+        pdf = await loadingTask.promise;
+        totalPages = pdf.numPages;
 
-      pageStates.push({
-        wrapper,
-        rendered: false,
-        rendering: false,
-        pageNum: i + 1,
-        renderedAtZoom: 0
-      });
+        // Fetch page 1 dims safely
+        const page1 = await pdf.getPage(1);
+        const vp1 = page1.getViewport({ scale: 1 });
+        page1.cleanup();
+        
+        const defaultDims = { width: vp1.width, height: vp1.height };
+        pageData = Array.from({ length: totalPages }, () => ({ ...defaultDims }));
+
+        setupPages();
+        updatePageSizes();
+        overlay.classList.add('hidden');
+
+      } catch (error) {
+        console.error("PDF Load Error:", error);
+        loadingText.textContent = "Fout bij laden van de PDF. Probeer het bestand rechtstreeks te downloaden.";
+        document.querySelector('.loading-overlay__spinner').style.display = 'none';
+      }
+    }
+
+    function setupPages() {
+      for (let i = 0; i < totalPages; i++) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'page-wrapper page-wrapper--loading';
+        wrapper.dataset.pageNum = i + 1;
+        pagesContainer.appendChild(wrapper);
+
+        pageStates.push({
+          wrapper,
+          rendered: false,
+          rendering: false,
+          renderTask: null, // FIX: Track render tasks for cancellation
+          pageNum: i + 1,
+          renderedAtZoom: 0
+        });
+        observer.observe(wrapper);
+      }
     }
 
     function updatePageSizes() {
@@ -321,129 +255,111 @@
       }
     }
 
-    updatePageSizes();
-    overlay.classList.add('hidden');
-
     // ── Lazy rendering with IntersectionObserver ──
-    // Pages render at current zoom × DPR for sharp text.
-    // Re-renders triggered when zooming in beyond rendered scale.
     const observer = new IntersectionObserver((entries) => {
       for (const entry of entries) {
         if (!entry.isIntersecting) continue;
         const num = parseInt(entry.target.dataset.pageNum);
         const state = pageStates[num - 1];
-        if (state.rendered || state.rendering) continue;
-        renderPage(state);
+        if (!state.rendered && !state.rendering) {
+          renderPage(state);
+        }
       }
-    }, {
-      rootMargin: '150% 0px'
-    });
-
-    pageStates.forEach(s => observer.observe(s.wrapper));
+    }, { rootMargin: '150% 0px' });
 
     async function renderPage(state) {
-      state.rendering = true;
-      const zoomAtRenderStart = currentZoom;
-      const page = await pdf.getPage(state.pageNum);
-
-      // Correct page dimensions now that we have the real data
-      const realVp = page.getViewport({ scale: 1 });
-      pageData[state.pageNum - 1] = { width: realVp.width, height: realVp.height };
-      const displayW = getBaseWidth() * zoomAtRenderStart;
-      state.wrapper.style.width = displayW + 'px';
-      state.wrapper.style.height = (displayW * realVp.height / realVp.width) + 'px';
-
-      // Render at current zoom × DPR — 1:1 pixel mapping for sharp text.
-      const pageWidth = realVp.width;
-      const pageHeight = realVp.height;
-      const targetScale = (displayW / pageWidth) * PIXEL_RATIO;
-
-      // Cap canvas to avoid GPU limits
-      const MAX_CANVAS_DIM = 6144;
-      const scale = Math.min(targetScale, MAX_CANVAS_DIM / pageWidth, MAX_CANVAS_DIM / pageHeight);
-
-      const renderViewport = page.getViewport({ scale });
-      const canvas = document.createElement('canvas');
-      canvas.width = renderViewport.width;
-      canvas.height = renderViewport.height;
-
-      await page.render({ canvasContext: canvas.getContext('2d'), viewport: renderViewport }).promise;
-      page.cleanup();
-
-      // Swap old canvas for new one (keeps old canvas visible during re-render)
-      const oldCanvas = state.wrapper.querySelector('canvas');
-      if (oldCanvas) {
-        state.wrapper.replaceChild(canvas, oldCanvas);
-      } else {
-        state.wrapper.classList.remove('page-wrapper--loading');
-        state.wrapper.appendChild(canvas);
+      // FIX: If it's already rendering, cancel it so we can re-render at the new zoom scale
+      if (state.rendering && state.renderTask) {
+        state.renderTask.cancel();
       }
 
-      state.rendered = true;
-      state.rendering = false;
-      state.renderedAtZoom = zoomAtRenderStart;
+      state.rendering = true;
+      const zoomAtRenderStart = currentZoom;
+
+      try {
+        const page = await pdf.getPage(state.pageNum);
+        const realVp = page.getViewport({ scale: 1 });
+        pageData[state.pageNum - 1] = { width: realVp.width, height: realVp.height };
+        
+        const displayW = getBaseWidth() * zoomAtRenderStart;
+        state.wrapper.style.width = displayW + 'px';
+        state.wrapper.style.height = (displayW * realVp.height / realVp.width) + 'px';
+
+        const pageWidth = realVp.width;
+        const targetScale = (displayW / pageWidth) * PIXEL_RATIO;
+        const scale = Math.min(targetScale, 6144 / pageWidth); // Prevent crashing on mobile GPUs
+
+        const renderViewport = page.getViewport({ scale });
+        const canvas = document.createElement('canvas');
+        canvas.width = renderViewport.width;
+        canvas.height = renderViewport.height;
+
+        state.renderTask = page.render({ canvasContext: canvas.getContext('2d'), viewport: renderViewport });
+        await state.renderTask.promise;
+
+        page.cleanup();
+
+        const oldCanvas = state.wrapper.querySelector('canvas');
+        if (oldCanvas) {
+          state.wrapper.replaceChild(canvas, oldCanvas);
+        } else {
+          state.wrapper.classList.remove('page-wrapper--loading');
+          state.wrapper.appendChild(canvas);
+        }
+
+        state.rendered = true;
+        state.renderedAtZoom = zoomAtRenderStart;
+
+      } catch (err) {
+        // Ignore errors caused by intentional task cancellation
+        if (err.name !== 'RenderingCancelledException') {
+          console.error(`Page ${state.pageNum} render error:`, err);
+        }
+      } finally {
+        state.rendering = false;
+        state.renderTask = null;
+      }
     }
 
-    // ── Zoom logic (CSS only — instant) ──
+    // ── Zoom logic ──
     function applyZoom() {
-      // Preserve scroll position: remember how far through the document we are
-      const scrollTop = window.scrollY;
-      const scrollLeft = window.scrollX;
-      const oldHeight = document.documentElement.scrollHeight;
-      const oldWidth = document.documentElement.scrollWidth;
-      const vw = window.innerWidth;
-      const scrollYRatio = oldHeight > 0 ? scrollTop / oldHeight : 0;
-      const scrollXRatio = oldWidth > vw ? scrollLeft / (oldWidth - vw) : 0;
-
+      const scrollYRatio = window.scrollY / (document.documentElement.scrollHeight || 1);
+      
       currentZoom = ZOOM_STEPS[zoomIndex];
       zoomLevelEl.textContent = Math.round(currentZoom * 100) + '%';
       zoomInBtn.disabled = zoomIndex >= ZOOM_STEPS.length - 1;
       zoomOutBtn.disabled = zoomIndex <= 0;
+      
       updatePageSizes();
 
-      // Mark rendered pages as needing re-render if we've zoomed past their resolution.
-      // Old canvas stays visible until the new one is ready (double-buffer swap in renderPage).
+      // FIX: Force manual check for re-renders rather than relying on observer hacks
       for (const state of pageStates) {
-        if (!state.rendered || state.rendering) continue;
-        if (currentZoom > state.renderedAtZoom * 1.05) {
+        if (currentZoom > state.renderedAtZoom * 1.1) {
           state.rendered = false;
-          observer.unobserve(state.wrapper);
-          observer.observe(state.wrapper);
+          
+          // If currently visible in viewport, render it immediately
+          const rect = state.wrapper.getBoundingClientRect();
+          const isVisible = rect.top < window.innerHeight * 1.5 && rect.bottom > -window.innerHeight * 0.5;
+          
+          if (isVisible) renderPage(state);
         }
       }
 
-      // Restore relative scroll position so the same content stays in view
-      const newHeight = document.documentElement.scrollHeight;
-      const newWidth = document.documentElement.scrollWidth;
-      window.scrollTo(scrollXRatio * (newWidth - vw), scrollYRatio * newHeight);
+      window.scrollTo(window.scrollX, scrollYRatio * document.documentElement.scrollHeight);
     }
 
-    zoomInBtn.addEventListener('click', () => {
-      if (zoomIndex < ZOOM_STEPS.length - 1) { zoomIndex++; applyZoom(); }
-    });
+    // Event Listeners
+    zoomInBtn.addEventListener('click', () => { if (zoomIndex < ZOOM_STEPS.length - 1) { zoomIndex++; applyZoom(); } });
+    zoomOutBtn.addEventListener('click', () => { if (zoomIndex > 0) { zoomIndex--; applyZoom(); } });
+    zoomLevelEl.addEventListener('click', () => { zoomIndex = 2; applyZoom(); });
 
-    zoomOutBtn.addEventListener('click', () => {
-      if (zoomIndex > 0) { zoomIndex--; applyZoom(); }
-    });
-
-    zoomLevelEl.addEventListener('click', () => {
-      zoomIndex = 2; applyZoom();
-    });
-
-    // Ctrl+scroll / Cmd+scroll to zoom
     window.addEventListener('wheel', (e) => {
       if (!e.ctrlKey && !e.metaKey) return;
       e.preventDefault();
-      if (e.deltaY < 0 && zoomIndex < ZOOM_STEPS.length - 1) {
-        zoomIndex++;
-        applyZoom();
-      } else if (e.deltaY > 0 && zoomIndex > 0) {
-        zoomIndex--;
-        applyZoom();
-      }
+      if (e.deltaY < 0 && zoomIndex < ZOOM_STEPS.length - 1) { zoomIndex++; applyZoom(); } 
+      else if (e.deltaY > 0 && zoomIndex > 0) { zoomIndex--; applyZoom(); }
     }, { passive: false });
 
-    // Keyboard shortcuts
     window.addEventListener('keydown', (e) => {
       if ((e.ctrlKey || e.metaKey) && (e.key === '=' || e.key === '+')) {
         e.preventDefault();
@@ -453,10 +369,13 @@
         if (zoomIndex > 0) { zoomIndex--; applyZoom(); }
       } else if ((e.ctrlKey || e.metaKey) && e.key === '0') {
         e.preventDefault();
-        zoomIndex = 2;
-        applyZoom();
+        zoomIndex = 2; applyZoom();
       }
     });
+
+    // Start App
+    initViewer();
+
   </script>
 
 </body>
