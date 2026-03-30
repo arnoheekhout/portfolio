@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Milena Marcowka — Viewer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --burgundy: #600B1F;
+      --burgundy-light: #7A1A34;
+      --cream: #FAF5F0;
+      --warm-beige: #E8DDD3;
+      --text-dark: #2C1A0E;
+      --white: #FFFFFF;
+    }
+
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background-color: var(--warm-beige);
+      color: var(--text-dark);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* ── Top bar ── */
+    .toolbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem 1.5rem;
+      background-color: var(--cream);
+      border-bottom: 1px solid var(--warm-beige);
+      box-shadow: 0 1px 8px rgba(44, 26, 14, 0.06);
+    }
+
+    .toolbar__left, .toolbar__right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      min-width: 0;
+    }
+
+    .toolbar__back {
+      font-size: 0.8rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      text-decoration: none;
+      color: var(--burgundy);
+      opacity: 0.7;
+      transition: opacity 0.2s;
+      white-space: nowrap;
+    }
+    .toolbar__back:hover { opacity: 1; }
+
+    .toolbar__title {
+      font-family: 'EB Garamond', Georgia, serif;
+      font-size: 1.1rem;
+      color: var(--burgundy);
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      white-space: nowrap;
+    }
+
+    .toolbar__download {
+      font-size: 0.8rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      text-decoration: none;
+      color: var(--burgundy);
+      opacity: 0.7;
+      transition: opacity 0.2s;
+      white-space: nowrap;
+    }
+    .toolbar__download:hover { opacity: 1; }
+
+    /* ── Zoom controls ── */
+    .zoom-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .zoom-btn {
+      width: 30px;
+      height: 30px;
+      border: 1px solid var(--warm-beige);
+      border-radius: 4px;
+      background: var(--white);
+      color: var(--burgundy);
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color 0.2s, background-color 0.2s;
+      line-height: 1;
+    }
+    .zoom-btn:hover {
+      border-color: var(--burgundy);
+      background-color: #FDF8F4;
+    }
+
+    .zoom-level {
+      font-size: 0.7rem;
+      color: var(--text-dark);
+      opacity: 0.6;
+      min-width: 3em;
+      text-align: center;
+      letter-spacing: 0.03em;
+    }
+
+    /* ── Pages container ── */
+    .pages {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1.5rem 1rem 3rem;
+      gap: 1rem;
+    }
+
+    .page-wrapper {
+      background: var(--white);
+      box-shadow: 0 2px 16px rgba(44, 26, 14, 0.08);
+      line-height: 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .page-wrapper canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    /* placeholder while page hasn't rendered */
+    .page-wrapper--loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .page-wrapper--loading::after {
+      content: '';
+      width: 28px;
+      height: 28px;
+      border: 2px solid var(--warm-beige);
+      border-top-color: var(--burgundy);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      position: absolute;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ── Loading overlay ── */
+    .loading-overlay {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: var(--cream);
+      z-index: 200;
+      transition: opacity 0.3s;
+    }
+    .loading-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .loading-overlay__spinner {
+      width: 36px;
+      height: 36px;
+      border: 2px solid var(--warm-beige);
+      border-top-color: var(--burgundy);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 1.2rem;
+    }
+    .loading-overlay__text {
+      font-size: 0.8rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--burgundy);
+      opacity: 0.6;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 600px) {
+      .toolbar__title { display: none; }
+      .pages { padding: 0.75rem 0.5rem 2rem; gap: 0.5rem; }
+      .toolbar { padding: 0.6rem 0.75rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-overlay__spinner"></div>
+    <span class="loading-overlay__text">Laden...</span>
+  </div>
+
+  <nav class="toolbar">
+    <div class="toolbar__left">
+      <a href="index.html" class="toolbar__back">&larr; Terug</a>
+    </div>
+    <span class="toolbar__title" id="docTitle"></span>
+    <div class="toolbar__right">
+      <div class="zoom-controls">
+        <button class="zoom-btn" id="zoomOut" title="Zoom uit">&minus;</button>
+        <span class="zoom-level" id="zoomLevel">100%</span>
+        <button class="zoom-btn" id="zoomIn" title="Zoom in">+</button>
+      </div>
+      <a href="#" class="toolbar__download" id="downloadBtn" download>Download</a>
+    </div>
+  </nav>
+
+  <main class="pages" id="pages"></main>
+
+  <script type="module">
+    const params = new URLSearchParams(window.location.search);
+    const file = params.get('file');
+
+    if (!file) {
+      window.location.href = 'index.html';
+    }
+
+    // Titles for the toolbar
+    const titles = {
+      'MilenaMarcowka_Portfolio.pdf': 'Portfolio',
+      'MilenaMarcowka_CV.pdf': 'Curriculum Vitae',
+      'MilenaMarcowka_Masterproef.pdf': 'Masterproef'
+    };
+    const filename = file.split('/').pop();
+    document.getElementById('docTitle').textContent = titles[filename] || filename;
+    document.title = `Milena Marcowka \u2014 ${titles[filename] || 'Viewer'}`;
+
+    // Download link
+    document.getElementById('downloadBtn').href = file;
+
+    // Load pdf.js
+    const pdfjsLib = await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.9.155/pdf.min.mjs');
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.9.155/pdf.worker.min.mjs';
+
+    const pagesContainer = document.getElementById('pages');
+    const overlay = document.getElementById('loadingOverlay');
+    const PIXEL_RATIO = window.devicePixelRatio || 1;
+
+    const pdf = await pdfjsLib.getDocument({ url: file, disableAutoFetch: true, disableStream: false }).promise;
+    const totalPages = pdf.numPages;
+
+    // Store base viewport info per page (at scale=1)
+    const pageData = [];
+    for (let i = 1; i <= totalPages; i++) {
+      const page = await pdf.getPage(i);
+      const vp = page.getViewport({ scale: 1 });
+      pageData.push({ width: vp.width, height: vp.height });
+    }
+
+    // ── Zoom state ──
+    const ZOOM_STEPS = [0.5, 0.75, 1, 1.25, 1.5, 2, 2.5, 3];
+    let zoomIndex = 2; // start at 100%
+    let currentZoom = 1;
+    const MAX_ZOOM = ZOOM_STEPS[ZOOM_STEPS.length - 1]; // 3
+
+    const zoomLevelEl = document.getElementById('zoomLevel');
+    const zoomInBtn = document.getElementById('zoomIn');
+    const zoomOutBtn = document.getElementById('zoomOut');
+
+    function getBaseWidth() {
+      return Math.min(850, window.innerWidth - 32);
+    }
+
+    // ── Create page wrappers ──
+    const pageStates = [];
+
+    for (let i = 0; i < totalPages; i++) {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'page-wrapper page-wrapper--loading';
+      wrapper.dataset.pageNum = i + 1;
+      pagesContainer.appendChild(wrapper);
+
+      pageStates.push({
+        wrapper,
+        rendered: false,
+        rendering: false,
+        pageNum: i + 1
+      });
+    }
+
+    function updatePageSizes() {
+      const displayW = getBaseWidth() * currentZoom;
+      for (let i = 0; i < totalPages; i++) {
+        const aspect = pageData[i].height / pageData[i].width;
+        pageStates[i].wrapper.style.width = displayW + 'px';
+        pageStates[i].wrapper.style.height = (displayW * aspect) + 'px';
+      }
+    }
+
+    updatePageSizes();
+    overlay.classList.add('hidden');
+
+    // ── Lazy rendering with IntersectionObserver ──
+    // Render once at high resolution (enough for max zoom).
+    // Zoom only changes CSS size — no re-rendering needed.
+    const observer = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        const num = parseInt(entry.target.dataset.pageNum);
+        const state = pageStates[num - 1];
+        if (state.rendered || state.rendering) continue;
+        renderPage(state);
+      }
+    }, {
+      rootMargin: '150% 0px'
+    });
+
+    pageStates.forEach(s => observer.observe(s.wrapper));
+
+    async function renderPage(state) {
+      state.rendering = true;
+      const page = await pdf.getPage(state.pageNum);
+
+      // Render at max-zoom resolution so zoom is instant CSS scaling
+      const baseW = getBaseWidth();
+      const maxDisplayW = baseW * MAX_ZOOM;
+      const renderScale = (maxDisplayW / pageData[state.pageNum - 1].width) * PIXEL_RATIO;
+
+      // Cap canvas to avoid GPU limits (~4096-8192px on most devices)
+      const MAX_CANVAS_DIM = 6144;
+      const cappedScale = Math.min(
+        renderScale,
+        MAX_CANVAS_DIM / pageData[state.pageNum - 1].width,
+        MAX_CANVAS_DIM / pageData[state.pageNum - 1].height
+      );
+
+      const renderViewport = page.getViewport({ scale: cappedScale });
+
+      const canvas = document.createElement('canvas');
+      canvas.width = renderViewport.width;
+      canvas.height = renderViewport.height;
+
+      const ctx = canvas.getContext('2d');
+      await page.render({ canvasContext: ctx, viewport: renderViewport }).promise;
+
+      state.wrapper.classList.remove('page-wrapper--loading');
+      state.wrapper.appendChild(canvas);
+      state.rendered = true;
+      state.rendering = false;
+
+      page.cleanup();
+    }
+
+    // ── Zoom logic (CSS only — instant) ──
+    function applyZoom() {
+      // Preserve scroll position: remember how far through the document we are
+      const scrollTop = window.scrollY;
+      const oldHeight = document.documentElement.scrollHeight;
+      const scrollRatio = oldHeight > 0 ? scrollTop / oldHeight : 0;
+
+      currentZoom = ZOOM_STEPS[zoomIndex];
+      zoomLevelEl.textContent = Math.round(currentZoom * 100) + '%';
+      zoomInBtn.disabled = zoomIndex >= ZOOM_STEPS.length - 1;
+      zoomOutBtn.disabled = zoomIndex <= 0;
+      updatePageSizes();
+
+      // Restore relative scroll position so the same content stays in view
+      const newHeight = document.documentElement.scrollHeight;
+      window.scrollTo(0, scrollRatio * newHeight);
+    }
+
+    zoomInBtn.addEventListener('click', () => {
+      if (zoomIndex < ZOOM_STEPS.length - 1) { zoomIndex++; applyZoom(); }
+    });
+
+    zoomOutBtn.addEventListener('click', () => {
+      if (zoomIndex > 0) { zoomIndex--; applyZoom(); }
+    });
+
+    // Ctrl+scroll / Cmd+scroll to zoom
+    window.addEventListener('wheel', (e) => {
+      if (!e.ctrlKey && !e.metaKey) return;
+      e.preventDefault();
+      if (e.deltaY < 0 && zoomIndex < ZOOM_STEPS.length - 1) {
+        zoomIndex++;
+        applyZoom();
+      } else if (e.deltaY > 0 && zoomIndex > 0) {
+        zoomIndex--;
+        applyZoom();
+      }
+    }, { passive: false });
+
+    // Keyboard shortcuts
+    window.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && (e.key === '=' || e.key === '+')) {
+        e.preventDefault();
+        if (zoomIndex < ZOOM_STEPS.length - 1) { zoomIndex++; applyZoom(); }
+      } else if ((e.ctrlKey || e.metaKey) && e.key === '-') {
+        e.preventDefault();
+        if (zoomIndex > 0) { zoomIndex--; applyZoom(); }
+      } else if ((e.ctrlKey || e.metaKey) && e.key === '0') {
+        e.preventDefault();
+        zoomIndex = 2;
+        applyZoom();
+      }
+    });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "portfolio",
+      "runtimeExecutable": "C:/Users/Arno/AppData/Local/Programs/Python/Python314/python",
+      "runtimeArgs": ["-m", "http.server", "3000"],
+      "port": 3000
+    }
+  ]
+}
