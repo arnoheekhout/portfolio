@@ -41,7 +41,15 @@
       "Bash(rm -f MilenaMarcowka_Masterproef.pdf)",
       "Bash(cp MilenaMarcowka_Portfolio_compressed.pdf MilenaMarcowka_Portfolio.pdf)",
       "Bash(cp MilenaMarcowka_Masterproef_compressed.pdf MilenaMarcowka_Masterproef.pdf)",
-      "Bash(rm -f MilenaMarcowka_Portfolio_compressed.pdf MilenaMarcowka_Masterproef_compressed.pdf)"
+      "Bash(rm -f MilenaMarcowka_Portfolio_compressed.pdf MilenaMarcowka_Masterproef_compressed.pdf)",
+      "Bash(where qpdf:*)",
+      "Bash(where gs:*)",
+      "Bash(winget --version)",
+      "Bash(export PATH=\"$PATH:/c/Program Files/qpdf/bin\")",
+      "Bash(qpdf --version)",
+      "Bash(cp \"C:/Users/Arno/Desktop/projects/portfolio/pdfs/linearize/MilenaMarcowka_CV.pdf\" \"C:/Users/Arno/Desktop/projects/portfolio/pdfs/MilenaMarcowka_CV.pdf\")",
+      "Bash(cp \"C:/Users/Arno/Desktop/projects/portfolio/pdfs/linearize/MilenaMarcowka_Masterproef.pdf\" \"C:/Users/Arno/Desktop/projects/portfolio/pdfs/MilenaMarcowka_Masterproef.pdf\")",
+      "Bash(cp \"C:/Users/Arno/Desktop/projects/portfolio/pdfs/linearize/MilenaMarcowka_Portfolio.pdf\" \"C:/Users/Arno/Desktop/projects/portfolio/pdfs/MilenaMarcowka_Portfolio.pdf\")"
     ]
   }
 }

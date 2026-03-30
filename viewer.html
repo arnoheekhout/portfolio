@@ -28,13 +28,14 @@
       background-color: var(--warm-beige);
       color: var(--text-dark);
       -webkit-font-smoothing: antialiased;
-      overflow-x: hidden;
     }
 
     /* ── Top bar ── */
     .toolbar {
-      position: sticky;
+      position: fixed;
       top: 0;
+      left: 0;
+      right: 0;
       z-index: 100;
       display: flex;
       align-items: center;
@@ -120,15 +121,23 @@
       min-width: 3em;
       text-align: center;
       letter-spacing: 0.03em;
+      border: none;
+      background: none;
+      padding: 0;
+      font-family: inherit;
+      cursor: pointer;
+      transition: opacity 0.2s;
     }
+    .zoom-level:hover { opacity: 1; text-decoration: underline; }
 
     /* ── Pages container ── */
     .pages {
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 1.5rem 1rem 3rem;
+      padding: 5rem 1rem 3rem;
       gap: 1rem;
+      min-width: min-content;
     }
 
     .page-wrapper {
@@ -143,6 +152,7 @@
       display: block;
       width: 100%;
       height: auto;
+      filter: contrast(1.08);
     }
 
     /* placeholder while page hasn't rendered */
@@ -202,7 +212,7 @@
     /* ── Responsive ── */
     @media (max-width: 600px) {
       .toolbar__title { display: none; }
-      .pages { padding: 0.75rem 0.5rem 2rem; gap: 0.5rem; }
+      .pages { padding: 4.5rem 0.5rem 2rem; gap: 0.5rem; }
       .toolbar { padding: 0.6rem 0.75rem; }
     }
   </style>
@@ -222,7 +232,7 @@
     <div class="toolbar__right">
       <div class="zoom-controls">
         <button class="zoom-btn" id="zoomOut" title="Zoom uit">&minus;</button>
-        <span class="zoom-level" id="zoomLevel">100%</span>
+        <button class="zoom-level" id="zoomLevel" title="Reset zoom (Ctrl+0)">100%</button>
         <button class="zoom-btn" id="zoomIn" title="Zoom in">+</button>
       </div>
       <a href="#" class="toolbar__download" id="downloadBtn" download>Download</a>
@@ -260,29 +270,28 @@
     const overlay = document.getElementById('loadingOverlay');
     const PIXEL_RATIO = window.devicePixelRatio || 1;
 
-    const pdf = await pdfjsLib.getDocument({ url: file, disableAutoFetch: true, disableStream: false }).promise;
+    const pdf = await pdfjsLib.getDocument({ url: file, disableAutoFetch: true, disableStream: true }).promise;
     const totalPages = pdf.numPages;
 
-    // Store base viewport info per page (at scale=1)
-    const pageData = [];
-    for (let i = 1; i <= totalPages; i++) {
-      const page = await pdf.getPage(i);
-      const vp = page.getViewport({ scale: 1 });
-      pageData.push({ width: vp.width, height: vp.height });
-    }
+    // Fetch only page 1 dimensions upfront; use as default for all pages.
+    // This avoids triggering a full PDF download at startup.
+    const page1 = await pdf.getPage(1);
+    const vp1 = page1.getViewport({ scale: 1 });
+    page1.cleanup();
+    const defaultDims = { width: vp1.width, height: vp1.height };
+    const pageData = Array.from({ length: totalPages }, () => ({ ...defaultDims }));
 
     // ── Zoom state ──
-    const ZOOM_STEPS = [0.5, 0.75, 1, 1.25, 1.5, 2, 2.5, 3];
+    const ZOOM_STEPS = [0.5, 0.75, 1, 1.25, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5];
     let zoomIndex = 2; // start at 100%
     let currentZoom = 1;
-    const MAX_ZOOM = ZOOM_STEPS[ZOOM_STEPS.length - 1]; // 3
 
     const zoomLevelEl = document.getElementById('zoomLevel');
     const zoomInBtn = document.getElementById('zoomIn');
     const zoomOutBtn = document.getElementById('zoomOut');
 
     function getBaseWidth() {
-      return Math.min(850, window.innerWidth - 32);
+      return window.innerWidth - 32;
     }
 
     // ── Create page wrappers ──
@@ -298,7 +307,8 @@
         wrapper,
         rendered: false,
         rendering: false,
-        pageNum: i + 1
+        pageNum: i + 1,
+        renderedAtZoom: 0
       });
     }
 
@@ -315,8 +325,8 @@
     overlay.classList.add('hidden');
 
     // ── Lazy rendering with IntersectionObserver ──
-    // Render once at high resolution (enough for max zoom).
-    // Zoom only changes CSS size — no re-rendering needed.
+    // Pages render at current zoom × DPR for sharp text.
+    // Re-renders triggered when zooming in beyond rendered scale.
     const observer = new IntersectionObserver((entries) => {
       for (const entry of entries) {
         if (!entry.isIntersecting) continue;
@@ -333,44 +343,57 @@
 
     async function renderPage(state) {
       state.rendering = true;
+      const zoomAtRenderStart = currentZoom;
       const page = await pdf.getPage(state.pageNum);
 
-      // Render at max-zoom resolution so zoom is instant CSS scaling
-      const baseW = getBaseWidth();
-      const maxDisplayW = baseW * MAX_ZOOM;
-      const renderScale = (maxDisplayW / pageData[state.pageNum - 1].width) * PIXEL_RATIO;
+      // Correct page dimensions now that we have the real data
+      const realVp = page.getViewport({ scale: 1 });
+      pageData[state.pageNum - 1] = { width: realVp.width, height: realVp.height };
+      const displayW = getBaseWidth() * zoomAtRenderStart;
+      state.wrapper.style.width = displayW + 'px';
+      state.wrapper.style.height = (displayW * realVp.height / realVp.width) + 'px';
 
-      // Cap canvas to avoid GPU limits (~4096-8192px on most devices)
+      // Render at current zoom × DPR — 1:1 pixel mapping for sharp text.
+      const pageWidth = realVp.width;
+      const pageHeight = realVp.height;
+      const targetScale = (displayW / pageWidth) * PIXEL_RATIO;
+
+      // Cap canvas to avoid GPU limits
       const MAX_CANVAS_DIM = 6144;
-      const cappedScale = Math.min(
-        renderScale,
-        MAX_CANVAS_DIM / pageData[state.pageNum - 1].width,
-        MAX_CANVAS_DIM / pageData[state.pageNum - 1].height
-      );
+      const scale = Math.min(targetScale, MAX_CANVAS_DIM / pageWidth, MAX_CANVAS_DIM / pageHeight);
 
-      const renderViewport = page.getViewport({ scale: cappedScale });
-
+      const renderViewport = page.getViewport({ scale });
       const canvas = document.createElement('canvas');
       canvas.width = renderViewport.width;
       canvas.height = renderViewport.height;
 
-      const ctx = canvas.getContext('2d');
-      await page.render({ canvasContext: ctx, viewport: renderViewport }).promise;
+      await page.render({ canvasContext: canvas.getContext('2d'), viewport: renderViewport }).promise;
+      page.cleanup();
 
-      state.wrapper.classList.remove('page-wrapper--loading');
-      state.wrapper.appendChild(canvas);
+      // Swap old canvas for new one (keeps old canvas visible during re-render)
+      const oldCanvas = state.wrapper.querySelector('canvas');
+      if (oldCanvas) {
+        state.wrapper.replaceChild(canvas, oldCanvas);
+      } else {
+        state.wrapper.classList.remove('page-wrapper--loading');
+        state.wrapper.appendChild(canvas);
+      }
+
       state.rendered = true;
       state.rendering = false;
-
-      page.cleanup();
+      state.renderedAtZoom = zoomAtRenderStart;
     }
 
     // ── Zoom logic (CSS only — instant) ──
     function applyZoom() {
       // Preserve scroll position: remember how far through the document we are
       const scrollTop = window.scrollY;
+      const scrollLeft = window.scrollX;
       const oldHeight = document.documentElement.scrollHeight;
-      const scrollRatio = oldHeight > 0 ? scrollTop / oldHeight : 0;
+      const oldWidth = document.documentElement.scrollWidth;
+      const vw = window.innerWidth;
+      const scrollYRatio = oldHeight > 0 ? scrollTop / oldHeight : 0;
+      const scrollXRatio = oldWidth > vw ? scrollLeft / (oldWidth - vw) : 0;
 
       currentZoom = ZOOM_STEPS[zoomIndex];
       zoomLevelEl.textContent = Math.round(currentZoom * 100) + '%';
@@ -378,9 +401,21 @@
       zoomOutBtn.disabled = zoomIndex <= 0;
       updatePageSizes();
 
+      // Mark rendered pages as needing re-render if we've zoomed past their resolution.
+      // Old canvas stays visible until the new one is ready (double-buffer swap in renderPage).
+      for (const state of pageStates) {
+        if (!state.rendered || state.rendering) continue;
+        if (currentZoom > state.renderedAtZoom * 1.05) {
+          state.rendered = false;
+          observer.unobserve(state.wrapper);
+          observer.observe(state.wrapper);
+        }
+      }
+
       // Restore relative scroll position so the same content stays in view
       const newHeight = document.documentElement.scrollHeight;
-      window.scrollTo(0, scrollRatio * newHeight);
+      const newWidth = document.documentElement.scrollWidth;
+      window.scrollTo(scrollXRatio * (newWidth - vw), scrollYRatio * newHeight);
     }
 
     zoomInBtn.addEventListener('click', () => {
@@ -389,6 +424,10 @@
 
     zoomOutBtn.addEventListener('click', () => {
       if (zoomIndex > 0) { zoomIndex--; applyZoom(); }
+    });
+
+    zoomLevelEl.addEventListener('click', () => {
+      zoomIndex = 2; applyZoom();
     });
 
     // Ctrl+scroll / Cmd+scroll to zoom
