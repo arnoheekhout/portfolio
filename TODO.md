@@ -1,4 +1,1 @@
-- [ ] Use GitHub LFS for PDFs --> Not possible
-- [ ] Use pdf.js and lazy loading
-- [ ] Convert all the pdf slides to images 
-- [ ] Compress the PDF's
+- [ ] Convert all the pdf slides AVIF instaed of WEBP

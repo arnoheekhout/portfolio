@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(du -sh pdfs/*)",
+      "Bash(du -sh images/*)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(git:*)"
+    ]
+  }
+}

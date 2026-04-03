@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <title>Viewer — Milena Marcowka</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --burgundy:       #600B1F;
+      --burgundy-light: #7A1A34;
+      --cream:          #FAF5F0;
+      --warm-beige:     #E8DDD3;
+      --text-dark:      #2C1A0E;
+      --white:          #FFFFFF;
+      --toolbar-h:      52px;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--cream);
+      color: var(--text-dark);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Toolbar ── */
+    .toolbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: var(--toolbar-h);
+      background: var(--white);
+      border-bottom: 1px solid var(--warm-beige);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 0 1.25rem;
+      z-index: 100;
+    }
+
+    .toolbar__back {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--burgundy);
+      text-decoration: none;
+      opacity: 0.6;
+      transition: opacity 0.2s;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .toolbar__back:hover { opacity: 1; }
+
+    .toolbar__title {
+      font-family: 'EB Garamond', Georgia, serif;
+      font-size: 1.1rem;
+      color: var(--burgundy);
+      flex: 1;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .toolbar__right {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-shrink: 0;
+    }
+
+    .page-indicator {
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+      color: var(--burgundy);
+      opacity: 0.55;
+      min-width: 3.5rem;
+      text-align: right;
+    }
+
+    /* ── Zoom controls ── */
+    .zoom-controls {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .zoom-btn {
+      width: 28px; height: 28px;
+      border: 1px solid var(--warm-beige);
+      background: var(--white);
+      color: var(--burgundy);
+      font-size: 1rem;
+      line-height: 1;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: background 0.15s, opacity 0.15s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .zoom-btn:hover:not(:disabled) { background: var(--cream); }
+    .zoom-btn:disabled { opacity: 0.3; cursor: default; }
+
+    .zoom-level {
+      font-size: 0.72rem;
+      letter-spacing: 0.05em;
+      color: var(--burgundy);
+      opacity: 0.7;
+      min-width: 2.8rem;
+      text-align: center;
+      cursor: pointer;
+      padding: 0 2px;
+      transition: opacity 0.15s;
+    }
+    .zoom-level:hover { opacity: 1; }
+
+    /* ── Download ── */
+    .toolbar__download {
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--burgundy);
+      text-decoration: none;
+      opacity: 0.6;
+      border: 1px solid var(--warm-beige);
+      padding: 0.3rem 0.65rem;
+      border-radius: 4px;
+      transition: opacity 0.2s, background 0.2s;
+      white-space: nowrap;
+    }
+    .toolbar__download:hover { opacity: 1; background: var(--cream); }
+
+    /* ── Pages container ── */
+    .pages {
+      --zoom: 1;
+      padding-top: calc(var(--toolbar-h) + 2rem);
+      padding-bottom: 4rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5rem;
+      overflow-x: auto;
+    }
+
+    /* ── Individual page ── */
+    .page-wrapper {
+      position: relative;
+      width: calc(min(100vw - 2rem, 1100px) * var(--zoom));
+      background: var(--white);
+      box-shadow: 0 2px 20px rgba(44, 26, 14, 0.08);
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .page-wrapper img {
+      width: 100%;
+      height: auto;
+      display: block;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .page-wrapper img.loaded { opacity: 1; }
+
+    /* Shimmer skeleton */
+    .page-skeleton {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        90deg,
+        var(--white) 25%,
+        #f0ebe5 50%,
+        var(--white) 75%
+      );
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+    }
+
+    .page-wrapper.img-loaded .page-skeleton { display: none; }
+
+    @keyframes shimmer {
+      0%   { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* ── Error / loading overlay ── */
+    .loading-overlay {
+      position: fixed;
+      inset: 0;
+      top: var(--toolbar-h);
+      background: var(--cream);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      z-index: 50;
+    }
+
+    .loading-overlay.hidden { display: none; }
+
+    .spinner {
+      width: 32px; height: 32px;
+      border: 2px solid var(--warm-beige);
+      border-top-color: var(--burgundy);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading-overlay p {
+      font-size: 0.85rem;
+      color: var(--text-dark);
+      opacity: 0.6;
+      letter-spacing: 0.05em;
+    }
+
+    .error-msg {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .error-msg.visible { display: flex; }
+
+    .error-msg p {
+      font-size: 0.9rem;
+      opacity: 0.7;
+    }
+
+    .error-msg a {
+      color: var(--burgundy);
+      font-size: 0.8rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 600px) {
+      .toolbar__title { display: none; }
+      .zoom-controls  { display: none; }
+      .toolbar__download { padding: 0.3rem 0.5rem; }
+    }
+
+    @media (max-width: 400px) {
+      .toolbar__download span { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Toolbar -->
+  <nav class="toolbar">
+    <a href="index.html" class="toolbar__back">&larr; Terug</a>
+    <span class="toolbar__title" id="docTitle"></span>
+    <div class="toolbar__right">
+      <span class="page-indicator" id="pageIndicator"></span>
+      <div class="zoom-controls">
+        <button class="zoom-btn" id="zoomOut" title="Zoom out (Ctrl −)">−</button>
+        <span class="zoom-level" id="zoomLevel" title="Klik om te resetten">100%</span>
+        <button class="zoom-btn" id="zoomIn"  title="Zoom in (Ctrl +)">+</button>
+      </div>
+      <a href="#" class="toolbar__download" id="downloadBtn" download>
+        <span>Download PDF</span>
+      </a>
+    </div>
+  </nav>
+
+  <!-- Loading overlay -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <p>Laden…</p>
+    <div class="error-msg" id="errorMsg">
+      <p>Kon document niet laden.</p>
+      <a href="#" id="fallbackLink">Download PDF →</a>
+    </div>
+  </div>
+
+  <!-- Pages -->
+  <main class="pages" id="pages"></main>
+
+  <script>
+    const ZOOM_STEPS = [0.5, 0.75, 1, 1.25, 1.5, 2, 3];
+    let zoomIndex = 2; // start at 100%
+    let manifest = null;
+
+    // ── Resolve doc name from query param ──────────────────────────────────
+    const params  = new URLSearchParams(location.search);
+    const docName = params.get('doc') || '';
+
+    if (!docName) {
+      showError();
+    } else {
+      init();
+    }
+
+    async function init() {
+      const manifestUrl = `images/${docName}/manifest.json`;
+      const pdfUrl      = `pdfs/${docName}.pdf`;
+
+      // Set download link immediately
+      const dlBtn = document.getElementById('downloadBtn');
+      dlBtn.href = pdfUrl;
+      document.getElementById('fallbackLink').href = pdfUrl;
+
+      try {
+        const res = await fetch(manifestUrl);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        manifest = await res.json();
+      } catch (e) {
+        showError();
+        return;
+      }
+
+      document.getElementById('docTitle').textContent = manifest.title;
+      document.title = `${manifest.title} — Milena Marcowka`;
+
+      buildPages();
+      setupObserver();
+      setupZoom();
+      setupScrollIndicator();
+
+      document.getElementById('loadingOverlay').classList.add('hidden');
+    }
+
+    // ── Build page placeholder elements ───────────────────────────────────
+    function buildPages() {
+      const container = document.getElementById('pages');
+      manifest.pages.forEach((page, idx) => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'page-wrapper';
+        wrapper.dataset.index = idx;
+        wrapper.dataset.file  = page.file;
+
+        // Aspect ratio from manifest prevents layout shift
+        const ratio = page.height / page.width;
+        wrapper.style.aspectRatio = `${page.width} / ${page.height}`;
+
+        const skeleton = document.createElement('div');
+        skeleton.className = 'page-skeleton';
+        wrapper.appendChild(skeleton);
+
+        container.appendChild(wrapper);
+      });
+    }
+
+    // ── IntersectionObserver for lazy loading ──────────────────────────────
+    function setupObserver() {
+      const observer = new IntersectionObserver((entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          const wrapper = entry.target;
+          if (wrapper.dataset.loaded) continue;
+          wrapper.dataset.loaded = '1';
+          loadImage(wrapper);
+          observer.unobserve(wrapper);
+        }
+      }, { rootMargin: '200% 0px' });
+
+      document.querySelectorAll('.page-wrapper').forEach(w => observer.observe(w));
+    }
+
+    function loadImage(wrapper) {
+      const img = document.createElement('img');
+      const pageNum = parseInt(wrapper.dataset.index, 10) + 1;
+      img.alt      = `Pagina ${pageNum}`;
+      img.decoding = 'async';
+      img.src      = `images/${docName}/${wrapper.dataset.file}`;
+      img.onload   = () => {
+        img.classList.add('loaded');
+        wrapper.classList.add('img-loaded');
+      };
+      img.onerror  = () => {
+        wrapper.classList.add('img-loaded'); // hide shimmer even on error
+      };
+      wrapper.appendChild(img);
+    }
+
+    // ── Zoom ──────────────────────────────────────────────────────────────
+    function setupZoom() {
+      document.getElementById('zoomIn').addEventListener('click',  () => changeZoom(1));
+      document.getElementById('zoomOut').addEventListener('click', () => changeZoom(-1));
+      document.getElementById('zoomLevel').addEventListener('click', resetZoom);
+
+      // Ctrl + scroll
+      window.addEventListener('wheel', (e) => {
+        if (!e.ctrlKey && !e.metaKey) return;
+        e.preventDefault();
+        changeZoom(e.deltaY < 0 ? 1 : -1);
+      }, { passive: false });
+
+      // Ctrl +/-/0 keyboard
+      window.addEventListener('keydown', (e) => {
+        if (!e.ctrlKey && !e.metaKey) return;
+        if (e.key === '=' || e.key === '+') { e.preventDefault(); changeZoom(1); }
+        if (e.key === '-')                  { e.preventDefault(); changeZoom(-1); }
+        if (e.key === '0')                  { e.preventDefault(); resetZoom(); }
+      });
+
+      applyZoom();
+    }
+
+    function changeZoom(dir) {
+      zoomIndex = Math.max(0, Math.min(ZOOM_STEPS.length - 1, zoomIndex + dir));
+      applyZoom();
+    }
+
+    function resetZoom() {
+      zoomIndex = 2;
+      applyZoom();
+    }
+
+    function applyZoom() {
+      const zoom = ZOOM_STEPS[zoomIndex];
+      document.getElementById('pages').style.setProperty('--zoom', zoom);
+      document.getElementById('zoomLevel').textContent = Math.round(zoom * 100) + '%';
+      document.getElementById('zoomIn').disabled  = zoomIndex >= ZOOM_STEPS.length - 1;
+      document.getElementById('zoomOut').disabled = zoomIndex <= 0;
+    }
+
+    // ── Page indicator ────────────────────────────────────────────────────
+    function setupScrollIndicator() {
+      if (!manifest) return;
+      updateIndicator();
+      let ticking = false;
+      window.addEventListener('scroll', () => {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(() => { updateIndicator(); ticking = false; });
+      });
+    }
+
+    function updateIndicator() {
+      if (!manifest) return;
+      const wrappers = document.querySelectorAll('.page-wrapper');
+      const mid = window.innerHeight / 2;
+      let current = 1;
+      for (let i = wrappers.length - 1; i >= 0; i--) {
+        if (wrappers[i].getBoundingClientRect().top <= mid) {
+          current = i + 1;
+          break;
+        }
+      }
+      document.getElementById('pageIndicator').textContent =
+        `${current} / ${manifest.pageCount}`;
+    }
+
+    // ── Error state ───────────────────────────────────────────────────────
+    function showError() {
+      const overlay = document.getElementById('loadingOverlay');
+      overlay.querySelector('.spinner').style.display = 'none';
+      overlay.querySelector('p').style.display = 'none';
+      document.getElementById('errorMsg').classList.add('visible');
+      overlay.classList.remove('hidden');
+    }
+  </script>
+
+</body>
+</html>
