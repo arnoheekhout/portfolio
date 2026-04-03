@@ -3,3 +3,4 @@
 - [ ] Test on mobile
 - [ ] Enable horizontal scrolling
 - [ ] Add fallback JPEG
+- [ ] Start with lazy loading the first pages in the background as soon as you go to the homepage

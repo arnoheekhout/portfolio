@@ -4,7 +4,8 @@
       "Bash(du -sh pdfs/*)",
       "Bash(du -sh images/*)",
       "Bash(echo \"exit: $?\")",
-      "Bash(git:*)"
+      "Bash(git:*)",
+      "Bash(python convert_pdfs.py)"
     ]
   }
 }
