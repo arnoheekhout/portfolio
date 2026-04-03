@@ -1,1 +1,5 @@
-- [ ] Convert all the pdf slides AVIF instaed of WEBP
+- [ ] Make the reset click better
+- [ ] Enable zooming via double click and swipin
+- [ ] Test on mobile
+- [ ] Enable horizontal scrolling
+- [ ] Add fallback JPEG
