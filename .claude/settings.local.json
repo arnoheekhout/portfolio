@@ -7,7 +7,8 @@
       "Bash(git:*)",
       "Bash(python convert_pdfs.py)",
       "Bash(python compare_settings.py)",
-      "Bash(du -sh C:/Users/Arno/Desktop/projects/portfolio/images_compare/*/)"
+      "Bash(du -sh C:/Users/Arno/Desktop/projects/portfolio/images_compare/*/)",
+      "Bash(python3 -c ':*)"
     ]
   }
 }

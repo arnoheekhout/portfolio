@@ -1,10 +1,5 @@
-- [ ] Make the reset click better
-- [ ] Enable zooming via double click and swipin
-- [ ] Test on mobile
-- [ ] Enable horizontal scrolling
 - [ ] Add fallback JPEG
-- [ ] Start with lazy loading the first pages in the background as soon as you go to the homepage
-- [ ] Thumbnail images
+- [ ] Make it less hardcoded
 
 
 - [ ]   Option 1 — Fully automatic
