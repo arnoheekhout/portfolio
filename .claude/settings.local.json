@@ -5,7 +5,9 @@
       "Bash(du -sh images/*)",
       "Bash(echo \"exit: $?\")",
       "Bash(git:*)",
-      "Bash(python convert_pdfs.py)"
+      "Bash(python convert_pdfs.py)",
+      "Bash(python compare_settings.py)",
+      "Bash(du -sh C:/Users/Arno/Desktop/projects/portfolio/images_compare/*/)"
     ]
   }
 }
